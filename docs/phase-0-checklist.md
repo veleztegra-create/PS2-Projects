@@ -12,16 +12,16 @@
 
 ## Research still required before format implementation
 
-- [ ] Verify complete `ul.cfg` byte layout from OPL source.
-- [ ] Verify UL filename/CRC algorithm.
-- [ ] Verify UL part size and numbering.
-- [ ] Verify CD/DVD media values.
-- [ ] Verify ISO handling in current OPL.
+- [x] Verify complete `ul.cfg` byte layout from OPL source.
+- [x] Verify UL filename/CRC algorithm.
+- [x] Verify UL part size and numbering.
+- [x] Verify CD/DVD media values.
+- [x] Verify ISO handling in current OPL.
 - [ ] Research BIN/CUE variants used by PS2.
-- [ ] Define FAT32 rules.
-- [ ] Define exFAT rules.
-- [ ] Define how ISO games are discovered versus UL games.
-- [ ] Define analyzer status/severity model.
+- [x] Define FAT32 rules.
+- [x] Define exFAT rules.
+- [x] Define how ISO games are discovered versus UL games.
+- [x] Define analyzer status/severity model.
 - [ ] Build test fixtures for valid and damaged libraries.
 
 ## Implementation order
