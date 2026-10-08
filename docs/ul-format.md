@@ -63,9 +63,13 @@ The exact game ID normalization used by a particular tool must be retained when 
 
 ## Part size
 
-The OPL PC ISO-to-UL implementation writes a fixed-size chunk buffer and generates sequential part files.
+The OPL PC ISO-to-UL implementation limits each part to **1 GiB (1,073,741,824 bytes)**. The source calculates the number of parts from that limit and writes each part sequentially, with the final part containing the remainder. Its I/O buffer is 524,288 bytes; that buffer size is an implementation detail and is not the UL part size.
 
-The commonly documented target is **1 GiB per part**. This should be confirmed from the current constant in the OPL source before the first implementation of the splitter, rather than hard-coding the value from third-party documentation alone.
+## Game ID
+
+The OPL PC ISO-to-UL tool reads `SYSTEM.CNF` from the ISO and extracts the `BOOT2` path. It then removes the `;1` ISO version suffix from the executable name to obtain the Game ID used in the UL filename/config record.
+
+This is an important distinction: the Game ID is not derived from the ISO filename.
 
 ## CRC32
 
