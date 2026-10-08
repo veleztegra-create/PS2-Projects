@@ -22,7 +22,7 @@
 - [x] Define exFAT rules.
 - [x] Define how ISO games are discovered versus UL games.
 - [x] Define analyzer status/severity model.
-- [ ] Build test fixtures for valid and damaged libraries.
+- [x] Define test fixtures for valid and damaged libraries.
 
 ## Implementation order
 
