@@ -148,6 +148,8 @@ public class UlAnalyzerTests
         var game = Assert.Single(result.Games);
         Assert.Equal(Severity.Warning, game.Severity);
         Assert.Contains(game.Diagnostics, d => d.Code == DiagnosticCodes.Opl007);
+        // El diagnóstico del registro debe aparecer una sola vez en el resultado global.
+        Assert.Single(result.Diagnostics, d => d.Code == DiagnosticCodes.Opl007);
     }
 
     // ---------- Fixture 09 — media inválida ----------
