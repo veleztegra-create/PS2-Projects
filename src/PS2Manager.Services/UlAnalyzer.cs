@@ -76,6 +76,13 @@ public sealed class UlAnalyzer
             .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
 
         var usedGameIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var duplicateGameIds = cfg.Records
+            .Select(r => NormalizeImageId(r.ImageIdentifier))
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .GroupBy(id => id, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         // ---------- 3. Procesar registros ----------
         foreach (var rec in cfg.Records)
@@ -83,8 +90,20 @@ public sealed class UlAnalyzer
             // Los diagnósticos se acumulan en una lista LOCAL al juego.
             // Así la severidad se calcula solo con lo que le pertenece.
             var gameDiagnostics = new List<Diagnostic>();
+            if (cfg.RecordDiagnostics.TryGetValue(rec.Index, out var metadataDiagnostics))
+                gameDiagnostics.AddRange(metadataDiagnostics);
 
             string expectedGameId = NormalizeImageId(rec.ImageIdentifier);
+
+            if (!string.IsNullOrWhiteSpace(expectedGameId) &&
+                duplicateGameIds.Contains(expectedGameId))
+            {
+                gameDiagnostics.Add(new Diagnostic(
+                    DiagnosticCodes.Opl008,
+                    Severity.Error,
+                    $"Game ID duplicado en ul.cfg: '{expectedGameId}' (registro #{rec.Index}, '{rec.GameName}'). " +
+                    "La asociación de partes es ambigua."));
+            }
             string expectedCrc = OplCrc32.Format(OplCrc32.ComputeGameName(rec.GameName));
 
             List<UlFileEntry> foundFiles;
