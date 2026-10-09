@@ -6,7 +6,7 @@ namespace PS2Manager.IO;
 
 /// <summary>
 /// Parser de ul.cfg. Cada registro ocupa exactamente 64 bytes.
-/// No intenta "reparar" datos: cualquier anomalía se reporta como diagnóstico.
+/// Conserva los registros completos aunque haya bytes sobrantes al final.
 /// </summary>
 public static class UlCfgParser
 {
@@ -19,6 +19,7 @@ public static class UlCfgParser
     public static UlCfgParseResult Parse(ReadOnlySpan<byte> bytes)
     {
         var diagnostics = new List<Diagnostic>();
+        var recordDiagnostics = new Dictionary<int, IReadOnlyList<Diagnostic>>();
 
         if (bytes.Length == 0)
         {
@@ -26,18 +27,20 @@ public static class UlCfgParser
                 DiagnosticCodes.Opl001,
                 Severity.Warning,
                 "ul.cfg está vacío (0 bytes)."));
-            return new UlCfgParseResult(Array.Empty<UlCfgRecord>(), diagnostics);
+            return new UlCfgParseResult(Array.Empty<UlCfgRecord>(), diagnostics)
+            {
+                RecordDiagnostics = recordDiagnostics
+            };
         }
 
-        if (bytes.Length % RecordSize != 0)
+        int remainder = bytes.Length % RecordSize;
+        if (remainder != 0)
         {
-            int remainder = bytes.Length % RecordSize;
             diagnostics.Add(new Diagnostic(
                 DiagnosticCodes.Opl001,
                 Severity.Error,
                 $"ul.cfg length {bytes.Length} no divisible por {RecordSize} (resto {remainder}). " +
-                "No se parsea para no fabricar registros parciales."));
-            return new UlCfgParseResult(Array.Empty<UlCfgRecord>(), diagnostics);
+                $"Se parsean los {bytes.Length - remainder} bytes completos y se ignoran los {remainder} sobrantes."));
         }
 
         int count = bytes.Length / RecordSize;
@@ -45,11 +48,20 @@ public static class UlCfgParser
 
         for (int i = 0; i < count; i++)
         {
+            var localDiagnostics = new List<Diagnostic>();
             var slice = bytes.Slice(i * RecordSize, RecordSize);
-            records.Add(ParseRecord(slice, i, diagnostics));
+            records.Add(ParseRecord(slice, i, localDiagnostics));
+            if (localDiagnostics.Count > 0)
+            {
+                recordDiagnostics[i] = localDiagnostics.ToArray();
+                diagnostics.AddRange(localDiagnostics);
+            }
         }
 
-        return new UlCfgParseResult(records, diagnostics);
+        return new UlCfgParseResult(records, diagnostics)
+        {
+            RecordDiagnostics = recordDiagnostics
+        };
     }
 
     private static UlCfgRecord ParseRecord(
@@ -92,6 +104,7 @@ public static class UlCfgParser
     {
         int end = span.IndexOf((byte)0);
         if (end < 0) end = span.Length;
-        return Encoding.Latin1.GetString(span.Slice(0, end)).TrimEnd(' ', '\0');
+        // No recortar espacios: pueden formar parte de los bytes usados para el CRC.
+        return Encoding.Latin1.GetString(span.Slice(0, end));
     }
 }
