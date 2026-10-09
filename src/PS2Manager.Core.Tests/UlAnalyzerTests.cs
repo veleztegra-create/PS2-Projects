@@ -112,9 +112,42 @@ public class UlAnalyzerTests
 
         var result = Run(fs);
 
-        Assert.Empty(result.Games);
+        Assert.Single(result.Games); // se conserva el registro completo de 64 bytes
         Assert.Contains(result.Diagnostics,
             d => d.Code == DiagnosticCodes.Opl001 && d.Severity == Severity.Error);
+    }
+
+    [Fact]
+    public void DuplicateGameIdInCfg_ReportedForBothGamesAsOpl008()
+    {
+        var fs = new FixtureBuilder()
+            .WithUlCfg(
+                UlCfgRecordSpec.Dvd("First Game", "ul.SLUS_000.00", 1),
+                UlCfgRecordSpec.Dvd("Second Game", "ul.SLUS_000.00", 1))
+            .WithUlPartForName("First Game", "SLUS_000.00", 0);
+
+        var result = Run(fs);
+
+        Assert.Equal(2, result.Games.Count);
+        Assert.All(result.Games, game =>
+        {
+            Assert.Equal(Severity.Error, game.Severity);
+            Assert.Contains(game.Diagnostics, d => d.Code == DiagnosticCodes.Opl008);
+        });
+        Assert.Equal(2, result.Diagnostics.Count(d => d.Code == DiagnosticCodes.Opl008));
+    }
+
+    [Fact]
+    public void MetadataDiagnosticsAffectPerGameSeverity()
+    {
+        var fs = new FixtureBuilder()
+            .WithUlCfg(UlCfgRecordSpec.Dvd("", "ul.SLUS_000.00", 0));
+
+        var result = Run(fs);
+
+        var game = Assert.Single(result.Games);
+        Assert.Equal(Severity.Warning, game.Severity);
+        Assert.Contains(game.Diagnostics, d => d.Code == DiagnosticCodes.Opl007);
     }
 
     // ---------- Fixture 09 — media inválida ----------
