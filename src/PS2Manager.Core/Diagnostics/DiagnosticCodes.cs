@@ -12,5 +12,6 @@ public static class DiagnosticCodes
     public const string Opl004 = "OPL004"; // parte UL huérfana
     public const string Opl005 = "OPL005"; // CRC en filename != CRC esperado
     public const string Opl006 = "OPL006"; // part-count mismatch / parte sobrante / parte duplicada
-    public const string Opl007 = "OPL007"; // metadata inconsistente: GameName/ImageIdentifier vacío, nombre no parseable
+    public const string Opl007 = "OPL007"; // metadata inconsistente / nombre no parseable
+    public const string Opl008 = "OPL008"; // Game ID duplicado en ul.cfg
 }
