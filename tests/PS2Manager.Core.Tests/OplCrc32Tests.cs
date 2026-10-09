@@ -8,9 +8,9 @@ public class OplCrc32Tests
     [Fact]
     public void ComputeGameName_MatchesSourceDerivedReferenceVector()
     {
-        // Vector fijado a partir de una traducción independiente del crc32()
-        // publicado en pc/iso2opl/src/iso2opl.c y pc/opl2iso/src/opl2iso.c.
-        // No sustituye una comprobación contra un ul.cfg producido por hardware/OPL.
+        // Vectores comprobados con un pequeño harness C compilado a partir de
+        // la rutina crc32() de iso2opl.c / opl2iso.c. No equivalen a validar
+        // una biblioteca generada por una consola o por OPL ejecutándose.
         Assert.Equal("41552A45", OplCrc32.Format(OplCrc32.ComputeGameName("Fixture UL Game")));
         Assert.Equal("DB5FB40D", OplCrc32.Format(OplCrc32.ComputeGameName("X")));
         Assert.Equal("00000000", OplCrc32.Format(OplCrc32.ComputeGameName("")));
