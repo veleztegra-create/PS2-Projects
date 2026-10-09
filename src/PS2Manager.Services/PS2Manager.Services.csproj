@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>PS2Manager.Services</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PS2Manager.Core\PS2Manager.Core.csproj" />
+    <ProjectReference Include="..\PS2Manager.IO\PS2Manager.IO.csproj" />
+  </ItemGroup>
+</Project>
