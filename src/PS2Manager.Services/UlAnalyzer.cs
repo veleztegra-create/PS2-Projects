@@ -46,7 +46,12 @@ public sealed class UlAnalyzer
         {
             var bytes = _fs.ReadAllBytes(cfgFile);
             cfg = UlCfgParser.Parse(bytes);
-            diagnostics.AddRange(cfg.Diagnostics);
+            // Los diagnósticos de cada registro se añadirán una sola vez al juego
+            // correspondiente; aquí solo añadimos los diagnósticos globales del archivo.
+            var recordDiagnosticSet = cfg.RecordDiagnostics.Values
+                .SelectMany(items => items)
+                .ToHashSet();
+            diagnostics.AddRange(cfg.Diagnostics.Where(d => !recordDiagnosticSet.Contains(d)));
         }
         else
         {
