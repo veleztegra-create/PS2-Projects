@@ -1,40 +1,30 @@
-# CRC32 de OPL — Incertidumbre abierta
+# CRC32 de OPL — estado de verificación
 
-## Estado
+## Estado actual
 
-La implementación en `src/PS2Manager.IO/OplCrc32.cs` reproduce el algoritmo
-**descrito** en `docs/ul-format.md`:
+Se inspeccionó la implementación `crc32(const char *string)` de estos dos archivos del código fuente de Open PS2 Loader:
 
-- polynomial `0x04C11DB7`
-- procesamiento MSB-first (no reflejado)
-- string terminado en nulo
+- `pc/iso2opl/src/iso2opl.c`
+- `pc/opl2iso/src/opl2iso.c`
 
-Pero **no se ha verificado byte-a-byte contra el código fuente actual de OPL**
-(`pc/iso2opl/src/iso2opl.c`, `include/supportbase.h`). Los intentos de acceso
-en esta iteración fallaron.
+Ambos contienen el mismo algoritmo. `src/PS2Manager.IO/OplCrc32.cs` ahora reproduce sus operaciones, en lugar de asumir el CRC-32 convencional.
 
-## Preguntas que deben resolverse antes de considerar el parser verificado
+## Detalles importantes del algoritmo de OPL
 
-1. **Estado inicial de `crc`** en la llamada a `USBA_crc32` / `crc32`.
-   Opciones plausibles: `0` (implementación típica en muchos ports) o
-   `0xFFFFFFFF` (convención CRC32 estándar). El código actual asume `0`.
-2. **Inclusión del byte nulo**. El doc dice "processes the null-terminated
-   game-name string", que puede interpretarse como:
-   - procesar los caracteres hasta, pero sin incluir, el nulo (`while (*s)`), o
-   - procesar la cadena incluyendo el nulo final.
-   El código actual NO incluye el nulo por defecto; `ComputeGameName` expone
-   el flag `includeNullTerminator` para invertirlo sin reescribir el algoritmo.
-3. **Normalización previa del nombre**. No se sabe si OPL pasa el `GameName`
-   tal cual (con espacios finales, mayúsculas/minúsculas originales) o lo
-   normaliza. El código actual pasa el string sin transformar.
-4. **XOR final**. No se sabe si OPL aplica `crc ^= 0xFFFFFFFF` antes de formatear.
-   El código actual NO aplica XOR final.
-5. **"Reversed table index `255 - table`"**. El doc describe un storage invertido
-   de la tabla. Si el acceso también usa `255 - idx`, el resultado es idéntico
-   al de una tabla estándar. Si no, el resultado difiere. El código actual usa
-   tabla y acceso estándar, que es matemáticamente equivalente a la interpretación
-   simétrica.
+1. Polinomio: `0x04C11DB7`.
+2. La tabla se construye con la condición de signo de un `int` de 32 bits, como aparece en el código C original. No es la rutina MSB-first convencional.
+3. La tabla se guarda en orden inverso: `crctab[255 - table]`.
+4. Al terminar de construir la tabla, el código original reutiliza el valor que queda en `crc` como estado inicial. No lo reinicia explícitamente.
+5. El índice de tabla es `byte ^ ((crc >> 24) & 0xFF)`; no se aplica una inversión adicional al índice.
+6. El bucle es `do/while`, por lo que procesa también el byte NUL que termina el nombre.
+7. No hay XOR final en la función fuente.
 
-## Qué se necesita para cerrar esta incertidumbre
+Como los desplazamientos de enteros con signo que se desbordan no son portables según el estándar C, C# reproduce explícitamente el comportamiento habitual de enteros de 32 bits en las plataformas para las que se escribió esta herramienta. Los nombres de juego con bytes no ASCII requieren comprobación adicional contra una biblioteca real.
 
-Un único vector real verificado:
+## Vectores de regresión
+
+Los tests incluyen vectores de referencia calculados a partir de una traducción independiente de la rutina fuente. Sirven para detectar cambios accidentales en la implementación, pero **no son una sustitución de la comparación con un `ul.cfg` real generado por OPL**. Esa comprobación externa sigue pendiente.
+
+## Qué falta para cerrar la verificación práctica
+
+Comparar al menos un nombre de juego y su CRC contra un archivo `ul.*` generado por OPL/USBExtreme real. Hasta entonces, el código ya refleja la rutina fuente inspeccionada, pero no debe afirmarse que se haya validado con una unidad física.
