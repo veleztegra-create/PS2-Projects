@@ -39,6 +39,18 @@ public class OplCrc32Tests
     }
 
     [Fact]
+    public void ComputeGameName_MatchesPrefixedTitleStoredInUlCfg()
+    {
+        // Registro real de 64 bytes compartido por el usuario:
+        // el campo name[32] contiene "SLUS_623.90.Super Mario 64 ESP" + NUL.
+        // OPL calcula el CRC de la cadena almacenada completa, incluido el ID
+        // y el punto; no del título comercial separado.
+        Assert.Equal(
+            "32D7DD31",
+            OplCrc32.Format(OplCrc32.ComputeGameName("SLUS_623.90.Super Mario 64 ESP")));
+    }
+
+    [Fact]
     public void Compute_IsDeterministic()
     {
         var bytes = Encoding.Latin1.GetBytes("Fixture UL Game");
