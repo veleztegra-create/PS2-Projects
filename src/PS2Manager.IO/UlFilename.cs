@@ -19,7 +19,7 @@ public static partial class UlFilename
 {
     [GeneratedRegex(
         @"^ul\.([0-9A-Fa-f]{8})\.([A-Za-z0-9_\-\.]+?)\.(\d{2})$",
-        RegexOptions.CultureInvariant)]
+        RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
     private static partial Regex Pattern();
 
     public static bool TryParse(string fileName, out UlFilenameParts parts)

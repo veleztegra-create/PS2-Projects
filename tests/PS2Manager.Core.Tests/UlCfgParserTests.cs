@@ -17,16 +17,17 @@ public class UlCfgParserTests
     }
 
     [Fact]
-    public void Length65_AbortsAndReportsError()
+    public void Length65_ParsesCompleteRecordAndReportsTrailingByte()
     {
         var bytes = new byte[65];
         var result = UlCfgParser.Parse(bytes);
 
-        Assert.Empty(result.Records);
+        Assert.Single(result.Records);
         var diag = Assert.Single(result.Diagnostics,
             d => d.Code == DiagnosticCodes.Opl001);
         Assert.Equal(Severity.Error, diag.Severity);
         Assert.Contains("resto 1", diag.Message);
+        Assert.Contains("ignoran los 1 sobrantes", diag.Message);
     }
 
     [Fact]

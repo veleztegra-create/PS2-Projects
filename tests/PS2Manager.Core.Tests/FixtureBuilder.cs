@@ -7,9 +7,9 @@ namespace PS2Manager.Core.Tests;
 /// Constructor de fixtures sintéticos. Genera ul.cfg (64 bytes por registro)
 /// y archivos ul.* con los nombres que el analyzer debe reconocer.
 ///
-/// El CRC no se hardcodea: se calcula con OplCrc32 para que los tests sean
-/// auto-consistentes con la implementación. Para anclar el CRC contra OPL real
-/// hace falta un vector externo — ver docs/crc-uncertainty.md.
+/// El CRC se calcula con OplCrc32 para que los fixtures sigan la rutina fuente.
+/// Los vectores de regresión fijan el port; la comparación contra una biblioteca
+/// real generada por OPL sigue pendiente — ver docs/crc-uncertainty.md.
 /// </summary>
 internal sealed class FixtureBuilder
 {
