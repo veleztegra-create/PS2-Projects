@@ -51,6 +51,28 @@ public class OplCrc32Tests
     }
 
     [Fact]
+    public void ComputeGameName_MatchesReportedPigletTitleCandidate()
+    {
+        // El usuario reportó ul.270B457C.SLES_516.66.xx.
+        // El título "Piglet el Gran Juego" produce ese CRC; la coincidencia
+        // debe considerarse candidata hasta inspeccionar el registro binario.
+        Assert.Equal(
+            "270B457C",
+            OplCrc32.Format(OplCrc32.ComputeGameName("Piglet el Gran Juego")));
+    }
+
+    [Fact]
+    public void ComputeGameName_MatchesReportedStitchTitleCandidate()
+    {
+        // El usuario reportó ul.02CAA445.SCES_509.59.xx.
+        // "Stitch Experiment 626" produce ese CRC; el nombre exacto almacenado
+        // en el ul.cfg de esa unidad aún debe confirmarse con sus bytes.
+        Assert.Equal(
+            "02CAA445",
+            OplCrc32.Format(OplCrc32.ComputeGameName("Stitch Experiment 626")));
+    }
+
+    [Fact]
     public void Compute_IsDeterministic()
     {
         var bytes = Encoding.Latin1.GetBytes("Fixture UL Game");
