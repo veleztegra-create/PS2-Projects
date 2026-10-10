@@ -29,6 +29,16 @@ public class OplCrc32Tests
     }
 
     [Fact]
+    public void ComputeGameName_MatchesSecondReportedRealSample()
+    {
+        // El usuario identifica el registro como "Curious George" y reporta
+        // archivos ul.24DE05BF.SLUS_213.54.xx. El cálculo coincide con el prefijo.
+        Assert.Equal(
+            "24DE05BF",
+            OplCrc32.Format(OplCrc32.ComputeGameName("Curious George")));
+    }
+
+    [Fact]
     public void Compute_IsDeterministic()
     {
         var bytes = Encoding.Latin1.GetBytes("Fixture UL Game");
