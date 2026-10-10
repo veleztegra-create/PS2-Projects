@@ -40,7 +40,7 @@ Se recibió un `ul.cfg` real de 64 bytes que contiene un registro con:
 - Nombre del juego: `Harry Potter to Kenja no Ishi`
 - Identificador de imagen: `SLPM_654.65`
 
-La lista de archivos de la misma biblioteca proporcionada por el usuario incluye `ul.E8C54EAD.SLPM_654.65.01` y también la parte `.00) no fue necesaria para esta comparación. La implementación calcula `E8C54EAD` para el nombre del juego con su terminador NUL, coincidiendo con el prefijo CRC de los archivos `ul.*` listados.
+La lista de archivos de la misma biblioteca proporcionada por el usuario incluye `ul.E8C54EAD.SLPM_654.65.00` y `ul.E8C54EAD.SLPM_654.65.01`. La implementación calcula `E8C54EAD` para el nombre del juego con su terminador NUL, coincidiendo con el prefijo CRC de ambos nombres de archivo.
 
 Esto es una **validación real positiva de una muestra**. El prefijo `E8C54EAD` es el CRC; `SLPM_654.65` es el identificador de imagen, y no debe confundirse con el CRC.
 
