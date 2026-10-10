@@ -51,6 +51,18 @@ public class OplCrc32Tests
     }
 
     [Fact]
+    public void ComputeGameName_MatchesReportedDisneyBoltTitleCandidate()
+    {
+        // La lista de colección asocia SLES_554.29 con Disney Bolt y reporta
+        // el prefijo B8913F43. El título limpio produce ese CRC; sin el registro
+        // binario, se trata de una coincidencia candidata, no de una prueba del
+        // texto exacto almacenado en name[32].
+        Assert.Equal(
+            "B8913F43",
+            OplCrc32.Format(OplCrc32.ComputeGameName("Disney Bolt")));
+    }
+
+    [Fact]
     public void ComputeGameName_MatchesReportedPigletTitleCandidate()
     {
         // El usuario reportó ul.270B457C.SLES_516.66.xx.
