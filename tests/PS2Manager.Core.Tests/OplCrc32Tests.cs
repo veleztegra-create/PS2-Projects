@@ -17,6 +17,18 @@ public class OplCrc32Tests
     }
 
     [Fact]
+    public void ComputeGameName_MatchesRealOplUlCfgAndPartFilename()
+    {
+        // Validación de muestra real aportada por el usuario:
+        // ul.cfg contiene "Harry Potter to Kenja no Ishi" y el conjunto de
+        // archivos incluye ul.E8C54EAD.SLPM_654.65.01.
+        // El CRC se deriva del nombre del juego, no del identificador SLPM.
+        Assert.Equal(
+            "E8C54EAD",
+            OplCrc32.Format(OplCrc32.ComputeGameName("Harry Potter to Kenja no Ishi")));
+    }
+
+    [Fact]
     public void Compute_IsDeterministic()
     {
         var bytes = Encoding.Latin1.GetBytes("Fixture UL Game");
