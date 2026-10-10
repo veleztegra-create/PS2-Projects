@@ -37,28 +37,36 @@ Estos vectores comprueban el port C# contra la rutina derivada del código fuent
 
 ## Muestras reales reportadas
 
-| Nombre exacto reportado en `ul.cfg` | Prefijo de archivo reportado | CRC calculado por PS2-Manager | Estado |
+| Cadena almacenada en `name[32]` de `ul.cfg` | Prefijo de archivo reportado | CRC calculado por PS2-Manager | Estado |
 |---|---|---|---|
 | `Harry Potter to Kenja no Ishi` | `E8C54EAD` | `E8C54EAD` | Coincide |
 | `Curious George` | `24DE05BF` | `24DE05BF` | Coincide |
-| `Super Mario 64 ESP` | `32D7DD31` | `31745170` | No coincide |
-| `Piglet el Gran Juego` | `02CAA445` | `270B457C` | No coincide |
-| `Disney Bolt` | `485706CC` | `B8913F43` | No coincide |
+| `SLUS_623.90.Super Mario 64 ESP` | `32D7DD31` | `32D7DD31` | Coincide |
+| `Piglet el Gran Juego`* | `02CAA445` | `270B457C`* | Pendiente de registro |
+| `Disney Bolt`* | `485706CC` | `B8913F43`* | Pendiente de registro |
 
-Para Harry Potter se recibió un archivo `ul.cfg` de 64 bytes que contiene el título `Harry Potter to Kenja no Ishi` y el identificador `SLPM_654.65`; la lista aportada incluye `ul.E8C54EAD.SLPM_654.65.00`, `.01` y `.02`.
+`Harry Potter to Kenja no Ishi` está respaldado por un registro real de 64 bytes compartido por el usuario, con identificador de imagen `ul.SLPM_654.65`; la lista aportada incluye archivos `ul.E8C54EAD.SLPM_654.65.xx`.
 
-Para las otras muestras, los títulos y prefijos se basan en la tabla y los nombres de archivo compartidos por el usuario; todavía no se ha inspeccionado el registro binario correspondiente a cada uno. Por eso las coincidencias de Curious George y Harry Potter son evidencia útil, pero no sustituyen la comprobación byte a byte de todos los registros.
+Para Super Mario 64 ESP también se recibió el registro completo de 64 bytes. El campo `name[32]` comienza con los bytes ASCII de `SLUS_623.90.Super Mario 64 ESP` y termina con NUL. El campo no contiene solamente el título comercial: el ID, el punto y el título están concatenados. Al calcular el CRC sobre la cadena completa almacenada —`SLUS_623.90.Super Mario 64 ESP`, seguida del NUL—, el resultado es `32D7DD31`, exactamente el prefijo de los archivos `ul.32D7DD31.SLUS_623.90.00`.
 
-**No se debe ajustar el algoritmo para forzar que Super Mario 64 ESP produzca `32D7DD31`.** Primero hay que confirmar el campo `name[32]` real del registro de `SLUS_623.90`, incluyendo espacios, terminación NUL y bytes exactos. El prefijo del archivo por sí solo no prueba qué cadena produjo el CRC.
+**Conclusión para Super Mario 64 ESP:** el algoritmo no estaba fallando. La prueba anterior calculaba el CRC de `Super Mario 64 ESP` sin el prefijo `SLUS_623.90.`; esa no es la cadena almacenada en este registro. No se debe eliminar el ID ni el punto antes de calcular el CRC.
 
-La función de OPL calcula el CRC sobre el nombre entregado a `crc32(game_name)`; el identificador del juego y el número de parte no forman parte de esa cadena.
+Las muestras de Piglet y Disney Bolt siguen pendientes porque todavía no tenemos sus campos `name[32]` en hexadecimal. Los valores calculados marcados con asterisco corresponden a los títulos limpios reportados, no a registros binarios confirmados. No hay evidencia suficiente para atribuir esas discrepancias al algoritmo.
+
+## Regla para el parser y el analizador
+
+- Conservar la cadena original de `name[32]` para calcular el CRC, incluyendo cualquier ID prefijado que esté realmente almacenado.
+- No reconstruir el nombre a partir del ID del archivo, ni eliminar automáticamente un prefijo antes del CRC.
+- Si la interfaz necesita mostrar solo el título comercial, extraerlo en una propiedad de presentación separada; nunca sobrescribir el valor original usado para validar.
+- Mantener la lectura limitada al primer byte NUL, como corresponde a una cadena C. Los bytes de relleno posteriores al NUL no forman parte del nombre pasado a `crc32()`.
 
 ## Pruebas automáticas
 
 - `OplCrc32Tests.ComputeGameName_MatchesRealOplUlCfgAndPartFilename`: Harry Potter.
 - `OplCrc32Tests.ComputeGameName_MatchesSecondReportedRealSample`: Curious George.
+- `OplCrc32Tests.ComputeGameName_MatchesPrefixedTitleStoredInUlCfg`: Super Mario 64 ESP con el ID concatenado.
 - Vectores derivados de la rutina C: `Fixture UL Game`, `X` y cadena vacía.
 
-## Próximo paso para resolver las discrepancias
+## Próximo paso para resolver las discrepancias restantes
 
-Necesitamos el registro exacto de `ul.cfg` para `SLUS_623.90`. Cada registro mide 64 bytes y el campo de nombre ocupa los primeros 32 bytes. Se puede compartir una extracción hexadecimal de esos 32 bytes y los 15 bytes del campo de imagen; no hace falta subir ningún archivo de juego. Así podremos confirmar si el nombre almacenado es realmente `Super Mario 64 ESP` y descartar espacios finales, diferencias de codificación o una asociación incorrecta entre título y archivo.
+Para confirmar Piglet y Disney Bolt, necesitamos únicamente los primeros 32 bytes del registro de cada juego en `ul.cfg` y, si es posible, los 15 bytes del campo de imagen. No hace falta compartir los archivos de juego completos.
