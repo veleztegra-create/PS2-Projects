@@ -35,23 +35,32 @@ Los vectores siguientes se verificaron con un pequeño harness C que reproduce l
 
 Estos vectores comprueban el port C# contra la rutina derivada del código fuente, no contra una biblioteca creada por una instalación física de OPL.
 
-## Muestras reales reportadas
+## Muestras y candidatos reportados
 
-| Cadena almacenada en `name[32]` de `ul.cfg` | Prefijo de archivo reportado | CRC calculado por PS2-Manager | Estado |
+| Nombre candidato | ID reportado en archivos | CRC reportado/calculado | Estado |
 |---|---|---|---|
-| `Harry Potter to Kenja no Ishi` | `E8C54EAD` | `E8C54EAD` | Coincide |
-| `Curious George` | `24DE05BF` | `24DE05BF` | Coincide |
-| `SLUS_623.90.Super Mario 64 ESP` | `32D7DD31` | `32D7DD31` | Coincide |
-| `Piglet el Gran Juego`* | `02CAA445` | `270B457C`* | Pendiente de registro |
-| `Disney Bolt`* | `485706CC` | `B8913F43`* | Pendiente de registro |
+| `Harry Potter to Kenja no Ishi` | `SLPM_654.65` | `E8C54EAD` | Coincidencia confirmada con registro real |
+| `Curious George` | `SLUS_213.54` | `24DE05BF` | Coincidencia reportada; registro binario no incluido aquí |
+| `SLUS_623.90.Super Mario 64 ESP` | `SLUS_623.90` | `32D7DD31` | Coincidencia confirmada con registro real |
+| `Piglet el Gran Juego` | `SLES_516.66` | `270B457C` | CRC coincide con el nombre candidato |
+| `Stitch Experiment 626` | `SCES_509.59` | `02CAA445` | CRC coincide con el nombre candidato |
+| Título todavía desconocido | `SLES_548.37` | `485706CC` | Pendiente de bytes de `ul.cfg` |
 
 `Harry Potter to Kenja no Ishi` está respaldado por un registro real de 64 bytes compartido por el usuario, con identificador de imagen `ul.SLPM_654.65`; la lista aportada incluye archivos `ul.E8C54EAD.SLPM_654.65.xx`.
 
-Para Super Mario 64 ESP también se recibió el registro completo de 64 bytes. El campo `name[32]` comienza con los bytes ASCII de `SLUS_623.90.Super Mario 64 ESP` y termina con NUL. El campo no contiene solamente el título comercial: el ID, el punto y el título están concatenados. Al calcular el CRC sobre la cadena completa almacenada —`SLUS_623.90.Super Mario 64 ESP`, seguida del NUL—, el resultado es `32D7DD31`, exactamente el prefijo de los archivos `ul.32D7DD31.SLUS_623.90.00`.
+Para Super Mario 64 ESP también se recibió el registro completo de 64 bytes. El campo `name[32]` contiene `SLUS_623.90.Super Mario 64 ESP` seguido de NUL. Al calcular el CRC sobre esa cadena completa —incluidos el ID y el punto—, el resultado es `32D7DD31`, exactamente el prefijo de los archivos `ul.32D7DD31.SLUS_623.90.00`.
 
 **Conclusión para Super Mario 64 ESP:** el algoritmo no estaba fallando. La prueba anterior calculaba el CRC de `Super Mario 64 ESP` sin el prefijo `SLUS_623.90.`; esa no es la cadena almacenada en este registro. No se debe eliminar el ID ni el punto antes de calcular el CRC.
 
-Las muestras de Piglet y Disney Bolt siguen pendientes porque todavía no tenemos sus campos `name[32]` en hexadecimal. Los valores calculados marcados con asterisco corresponden a los títulos limpios reportados, no a registros binarios confirmados. No hay evidencia suficiente para atribuir esas discrepancias al algoritmo.
+## Corrección importante en la asociación de títulos
+
+La lista de archivos proporcionada contiene distintos ID de juego que se habían asociado inicialmente a títulos incorrectos o mezclados:
+
+- `SLES_516.66` aparece en catálogos públicos como **Disney's Piglet el Gran Juego**. El CRC de `Piglet el Gran Juego` es `270B457C`, coincidiendo con el prefijo reportado `ul.270B457C.SLES_516.66.xx`.
+- `SCES_509.59` aparece en catálogos públicos como **Disney's Stitch: Experiment 626**. La cadena candidata `Stitch Experiment 626` produce `02CAA445`, coincidiendo con `ul.02CAA445.SCES_509.59.xx`.
+- `SLES_548.37` corresponde a **Disney Princess - Enchanted Journey**, no a Disney Bolt. El CRC `485706CC` no coincide con el título limpio `Disney Princess - Enchanted Journey` en el cálculo actual. Por tanto, el nombre exacto guardado en ese registro puede ser una variante personalizada o distinta y no debe adivinarse.
+
+Las dos primeras coincidencias son buenas candidatas, pero sin los bytes originales de esos registros no podemos asegurar que sean las cadenas exactas almacenadas en `name[32]`. La tercera discrepancia sigue abierta.
 
 ## Regla para el parser y el analizador
 
@@ -65,8 +74,10 @@ Las muestras de Piglet y Disney Bolt siguen pendientes porque todavía no tenemo
 - `OplCrc32Tests.ComputeGameName_MatchesRealOplUlCfgAndPartFilename`: Harry Potter.
 - `OplCrc32Tests.ComputeGameName_MatchesSecondReportedRealSample`: Curious George.
 - `OplCrc32Tests.ComputeGameName_MatchesPrefixedTitleStoredInUlCfg`: Super Mario 64 ESP con el ID concatenado.
+- `OplCrc32Tests.ComputeGameName_MatchesReportedPigletTitleCandidate`: candidato Piglet.
+- `OplCrc32Tests.ComputeGameName_MatchesReportedStitchTitleCandidate`: candidato Stitch.
 - Vectores derivados de la rutina C: `Fixture UL Game`, `X` y cadena vacía.
 
-## Próximo paso para resolver las discrepancias restantes
+## Siguiente dato necesario
 
-Para confirmar Piglet y Disney Bolt, necesitamos únicamente los primeros 32 bytes del registro de cada juego en `ul.cfg` y, si es posible, los 15 bytes del campo de imagen. No hace falta compartir los archivos de juego completos.
+Para resolver el último caso, comparte únicamente los primeros 32 bytes del registro de `SLES_548.37` de `ul.cfg` (campo `name[32]`) y, si puedes, los 15 bytes siguientes del campo de imagen. No hace falta compartir archivos del juego.
