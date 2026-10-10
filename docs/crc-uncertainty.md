@@ -46,6 +46,17 @@ Esto es una **validación real positiva de una muestra**. El prefijo `E8C54EAD` 
 
 La prueba se conserva en `OplCrc32Tests.ComputeGameName_MatchesRealOplUlCfgAndPartFilename` para detectar regresiones futuras.
 
+## Otras muestras identificadas, pendientes de correlación
+
+El usuario compartió además nombres de partes que parecen corresponder a otros juegos:
+
+- CRC `02CAA445`, identificador `SCES_509.59`
+- CRC `485706CC`, identificador `SLES_548.37`
+- CRC `24DE05BF`, identificador `SLUS_213.54`
+- CRC `32D7DD31`, identificador `SLUS_623.90`
+
+Estos nombres confirman que la biblioteca contiene más grupos de archivos, pero **no son validaciones independientes del algoritmo todavía**, porque aún no tenemos los nombres de juego asociados a esos identificadores en sus registros de `ul.cfg`. No debemos inventar esos títulos ni asumir que el nombre visible del juego coincide con el registrado.
+
 ## Qué falta
 
-Validar un segundo juego real, preferiblemente con otro nombre e identificador, para reducir el riesgo de que la comprobación dependa de un solo caso. También queda pendiente comprobar nombres con caracteres no ASCII. No se requiere subir los archivos de juego completos: el `ul.cfg` y los nombres de las partes son suficientes para esta comprobación de CRC por nombre.
+Validar un segundo juego real, correlacionando el título exacto almacenado en `ul.cfg` con el prefijo CRC de su archivo `ul.*`. También queda pendiente comprobar nombres con caracteres no ASCII. No se requiere subir los archivos de juego completos: basta con el nombre exacto del registro y el nombre de archivo de una de sus partes.
